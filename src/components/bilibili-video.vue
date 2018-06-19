@@ -42,9 +42,14 @@ export default {
     }
   },
   mounted () {
+    let _this=this
     document.body.addEventListener('mouseup', () => {
       document.body.removeEventListener('mousemove', this.MoveReadin)
     })
+    this.$refs.videoExample.onended = () => {
+      _this.$refs.stopbut.style.display = 'none'
+      _this.$refs.playbut.style.display = 'inline'
+    }
   },
   methods: {
     aply () {
@@ -80,12 +85,9 @@ export default {
     timeupdate () {
       let lent = (this.$refs.videoExample.currentTime / 60).toString().substring(0, 4)
       let s = lent.split('.')[1]
-      // let m = Number.parseInt(lent.split('.')[0]) + Math.floor(s / 60)
       if (s >= 60) {
         s = s % 60
       }
-      // this.current = lent
-      // console.log(this.$refs.videoExample.currentTime)
       setTimeout(() => {
         let s = Number.parseInt(this.$refs.videoExample.currentTime)
         let m = Number.parseInt(s / 60)
@@ -109,7 +111,7 @@ export default {
       this.setreadlength(this.readlength)
     },
     setreadlength (readlength, item) {
-      this.$refs.read.style.left = readlength
+      this.$refs.read.style.left = (Number.parseFloat(readlength) - 1) + '%'
       this.$refs.completed.style.width = readlength
       let itemlength = this.$refs.videoExample.duration
       if (!item) {
@@ -128,14 +130,16 @@ export default {
   },
   computed: {
     timelength () {
-      let lent = (this.$refs.videoExample.duration / 60).toFixed(2)
-      let s = Number.parseInt(lent.split('.')[1])
-      let m = Number.parseInt(lent.split('.')[0]) + Math.floor(s / 60)
+      let s = Number.parseInt(this.$refs.videoExample.duration)
+      let m = Number.parseInt(s / 60)
       if (s >= 60) {
         s = s % 60
       }
       if (s < 10) {
         s = '0' + s
+      }
+      if (m < 10) {
+        m = '0' + m
       }
       return m + ':' + s
     }
@@ -167,7 +171,7 @@ export default {
   cursor: pointer;
   position: relative;
   width: 400px;
-  height: 8px;
+  height: 6px;
   border-radius: 4px;
   background-color: #666;
   margin-right: 20px;
@@ -175,7 +179,7 @@ export default {
 .completed{
   display: block;
   width: 0px;
-  height: 8px;
+  height: 6px;
   border-radius: 4px;
   background-color: #fff;
 }
@@ -183,11 +187,11 @@ export default {
   cursor: pointer;
   position: absolute;
   display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 8px;
-  background: #fff;
+  width: 12px;
+  height: 12px;
+  border-radius: 6px;
+  background: lightpink;
   left: 0px;
-  top: -3px;
+  top: -2.5px;
 }
 </style>
