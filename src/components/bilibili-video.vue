@@ -1,14 +1,14 @@
 <template>
-    <div class="videoBox">
-      <video @click="aply" @timeupdate="timeupdate" @loadedmetadata="loadedmetadata" ref="videoExample"
+    <div class="videoBox" ref="videoBox">
+      <video @click="onvideoaply" @timeupdate="timeupdate" @loadedmetadata="loadedmetadata" ref="videoExample"
              width="666px"
              height="500px"
-             src="../assets/videos/1-1导学.mp4">
+             src="http://www.1ecst.com/tp_ecst/Public//upload/template/videos/2018-06-13/1528891973_1754596351.mp4">
       </video>
-      <div class="conent">
-        <img @click="aply" ref="playbut" class="videobut" src="../assets/images/play.svg" alt="">
-        <img @click="aply" style="display: none" ref="stopbut" class="videobut" src="../assets/images/stop.svg" alt="">
-        <img class="videobut" src="../assets/images/next.svg" alt="">
+      <div class="conent" ref="conent">
+        <i @click="aply" ref="playbut" class="videobut iconfont icon-bofang"></i>
+        <i @click="aply" style="display: none" ref="stopbut" class="videobut iconfont icon-zanting"></i>
+        <i class="videobut iconfont icon-ai09"></i>
         <span ref="progress" @click="onclickprogress" class="Progress">
           <span ref="buffer" class="buffer "></span>
           <span ref="completed" class="completed "></span>
@@ -19,13 +19,24 @@
           /
           <span v-if="loaded">{{timelengths}}</span>
         </p>
-        <p class="selest" @click="onshowselestlist">选集</p>
+        <!--<p class="selest" @click="onshowselestlist">选集</p>-->
+        <div class="volume">
+          <i @click="onvolume" ref="volumemute" class="iconfont icon-xiaolaba volumerico"></i>
+          <div class="volumecontrol">
+            <span class="volumesum">{{volumesum}}</span>
+            <p @click="onvolumecontrol" ref="volumecontrol">
+              <span ref="volumereadin" @click="onstoppropagation" @mousedown="onvolumereadin" class="volumereadin readIn"></span>
+              <span ref="volumeprogress" class="volumeprogress"></span>
+            </p>
+          </div>
+        </div>
+        <i @click="onallscreen" ref="allscreen" class="iconfont icon-quanping allscreen"></i>
       </div>
-      <div class="selestlist" ref="selestlist">
-        <ul>
-          <li v-for="(itme, index) in url" :key="index" @click="onchoice" :data-url="itme">{{index+1}}</li>
-        </ul>
-      </div>
+      <!--<div class="selestlist" ref="selestlist">-->
+        <!--<ul>-->
+          <!--<li v-for="(itme, index) in url" :key="index" @click="onchoice" :data-url="itme">{{index+1}}</li>-->
+        <!--</ul>-->
+      <!--</div>-->
     </div>
 </template>
 
@@ -49,13 +60,29 @@ export default {
       readlength: '0%',
       loaded: false,
       current: '00:00',
-      timelengths: '00:00'
+      timelengths: '00:00',
+      volumereadiny: 1,
+      volumereadintop: '85%',
+      volumerlength: 50,
+      volumesum: 50,
+      volumes: 0.5
     }
   },
   mounted () {
     let _this = this
     document.body.addEventListener('mouseup', () => {
       document.body.removeEventListener('mousemove', this.MoveReadin)
+      document.body.removeEventListener('mousemove', this.volumereadin)
+    })
+    document.body.addEventListener('keydown', (event) => {
+      if (event.keyCode === 27) {
+        setTimeout(() => {
+          this.$refs.videoExample.width = '666'
+          this.$refs.videoExample.height = '500'
+          this.$refs.videoExample.style.position = 'static'
+          this.$refs.conent.style.position = 'absolute'
+        }, 2000)
+      }
     })
     this.$refs.videoExample.onended = () => {
       _this.playState = false
@@ -81,6 +108,12 @@ export default {
         this.$refs.buffer.style.width = (this.$refs.videoExample.buffered.end(0) / Number.parseInt(this.$refs.videoExample.duration) * 100) + '%'
       }
     })
+    window.addEventListener('keydown', (e) => {
+      if (e.keyCode === 32) {
+        this.aply()
+      }
+    })
+    this.$refs.videoExample.volume = 0.5
   },
   methods: {
     aply () {
@@ -120,21 +153,13 @@ export default {
         s = s % 60
       }
       setTimeout(() => {
-        let s = Number.parseInt(this.$refs.videoExample.currentTime)
-        let m = Number.parseInt(s / 60)
-        if (s >= 60) {
-          s = s % 60
-        }
-        if (s < 10) {
-          s = '0' + s
-        }
-        if (m < 10) {
-          m = '0' + m
-        }
-        this.current = m + ':' + s
+        this.calculateschedule()
       }, 1000)
       this.readlength = (Number.parseInt(this.$refs.videoExample.currentTime) / Number.parseInt(this.$refs.videoExample.duration) * 100) + '%'
       this.setreadlength(this.readlength, true)
+      if (this.$refs.videoExample.buffered.length >= 1) {
+        this.$refs.buffer.style.width = (this.$refs.videoExample.buffered.end(0) / Number.parseInt(this.$refs.videoExample.duration) * 100) + '%'
+      }
     },
     onclickprogress (event) {
       let lef = event.clientX - this.getOffsetLeft(this.$refs.progress)
@@ -147,13 +172,37 @@ export default {
       let itemlength = this.$refs.videoExample.duration
       if (!item) {
         this.$refs.videoExample.currentTime = itemlength * (Number.parseFloat(readlength) / 100)
+        this.calculateschedule()
       }
+    },
+    calculateschedule () {
+      let s = Number.parseInt(this.$refs.videoExample.currentTime)
+      let m = Number.parseInt(s / 60)
+      if (s >= 60) {
+        s = s % 60
+      }
+      if (s < 10) {
+        s = '0' + s
+      }
+      if (m < 10) {
+        m = '0' + m
+      }
+      this.current = m + ':' + s
     },
     getOffsetLeft (obj) {
       let tmp = obj.offsetLeft
       let val = obj.offsetParent
       while (val != null) {
         tmp += val.offsetLeft
+        val = val.offsetParent
+      }
+      return tmp
+    },
+    getOffsetTop (obj) {
+      let tmp = obj.offsetTop
+      let val = obj.offsetParent
+      while (val != null) {
+        tmp += val.offsetTop
         val = val.offsetParent
       }
       return tmp
@@ -173,31 +222,138 @@ export default {
       this.$refs.videoExample.play()
       this.$refs.stopbut.style.display = 'inline'
       this.$refs.playbut.style.display = 'none'
+    },
+    onvideoaply () {
+      this.aply()
+      // this.$refs.selestlist.style.right = '-250px'
+    },
+    onvolume (e) {
+      let classname = e.target.className
+      if (classname.indexOf('xiaolaba') !== -1) {
+        e.target.className = classname.replace('icon-xiaolaba', 'icon-jingyin')
+        this.volumes = this.$refs.videoExample.volume
+        this.$refs.videoExample.volume = 0
+        this.$refs.volumereadin.style.top = '100px'
+        this.volumesum = 0
+        this.$refs.volumeprogress.style.height = '0%'
+      } else {
+        e.target.className = classname.replace('icon-jingyin', 'icon-xiaolaba')
+        this.$refs.videoExample.volume = this.volumes
+        let tops = 100 - this.volumerlength
+        if (tops <= 0) {
+          tops = 0
+        }
+        this.$refs.volumereadin.style.top = tops + 'px'
+        this.volumesum = this.volumerlength
+        this.$refs.videoExample.volume = this.volumerlength / 100
+        this.$refs.volumeprogress.style.height = this.volumerlength + '%'
+      }
+    },
+    onvolumereadin (event) {
+      this.volumereadiny = event.clientY
+      this.volumereadintop = Number.parseFloat(this.volumerlength) || 50
+      document.body.addEventListener('mousemove', this.volumereadin)
+    },
+    onstoppropagation (event) {
+      event.stopPropagation()
+    },
+    volumereadin (event) {
+      this.volumerlength = (this.volumereadintop + ((this.volumereadiny - event.clientY)))
+      if (this.volumerlength <= 0) {
+        this.volumerlength = 0
+        this.$refs.volumemute.className = this.$refs.volumemute.className.replace('icon-xiaolaba', 'icon-jingyin')
+        this.$refs.videoExample.volume = 0
+      } else if (this.volumerlength >= 100) {
+        this.volumerlength = 100
+      } else {
+        this.$refs.volumemute.className = this.$refs.volumemute.className.replace('icon-jingyin', 'icon-xiaolaba')
+      }
+      this.$refs.volumeprogress.style.height = (Number.parseFloat(this.volumerlength)) + '%'
+      let tops = 100 - this.volumerlength
+      if (tops <= 0) {
+        tops = 0
+      }
+      this.$refs.volumereadin.style.top = tops + 'px'
+      this.volumesum = this.volumerlength
+      this.$refs.videoExample.volume = this.volumerlength / 100
+    },
+    onvolumecontrol (event) {
+      let top = (event.clientY - this.getOffsetTop(this.$refs.volumecontrol))
+      this.volumerlength = 100 - top
+      this.$refs.volumereadin.style.top = top + 'px'
+      this.volumesum = this.volumerlength
+      this.$refs.videoExample.volume = (this.volumerlength) / 100
+      this.$refs.volumeprogress.style.height = (Number.parseFloat((this.volumerlength))) + '%'
+    },
+    onallscreen () {
+      if (this.$refs.videoExample.width !== window.innerWidth) {
+        let de = document.documentElement
+        if (de.requestFullscreen) {
+          de.requestFullscreen()
+        } else if (de.mozRequestFullScreen) {
+          de.mozRequestFullScreen()
+        } else if (de.webkitRequestFullScreen) {
+          de.webkitRequestFullScreen()
+        }
+        setTimeout(() => {
+          this.$refs.videoExample.width = window.innerWidth
+          this.$refs.videoExample.height = window.innerHeight
+          this.$refs.videoExample.style.position = 'fixed'
+          this.$refs.conent.style.position = 'fixed'
+          this.$refs.conent.style.bottom = '0'
+        }, 20)
+      } else {
+        let de = document
+        if (de.exitFullscreen) {
+          de.exitFullscreen()
+        } else if (de.mozCancelFullScreen) {
+          de.mozCancelFullScreen()
+        } else if (de.webkitCancelFullScreen) {
+          de.webkitCancelFullScreen()
+        }
+        this.$refs.videoExample.width = '666'
+        this.$refs.videoExample.height = '500'
+        this.$refs.videoExample.style.position = 'static'
+        this.$refs.conent.style.position = 'absolute'
+      }
     }
   }
 }
 </script>
 
 <style scoped>
+@import "../assets/fonts/videofont/iconfont.css";
 .videoBox{
   position: relative;
   background-color: #000;
   width: 680px;
   margin: 0 auto;
-  overflow: hidden;
+  border: 1px solid #fffc;
 }
 .videoBox video{
   cursor: pointer;
+  top: 0;
+  left: 0;
 }
 .conent{
   background-color: #fff;
   width: 100%;
-  height: 50px;
-  /*position: absolute;*/
+  height: 35px;
+  line-height: 35px;
+  position: absolute;
   left: 0;
-  bottom: 5px;
+  /*bottom: 5px;*/
   display: flex;
   align-items: center;
+}
+.conent i{
+  font-size: 25px;
+  width: 40px;
+  color: #dbdbdb;
+  cursor: pointer;
+}
+.conent i:hover{
+  color: #6d6d6d;
 }
 .videobut{
   cursor: pointer;
@@ -211,9 +367,14 @@ export default {
   border-radius: 4px;
   background-color: #e5e9ef;
   margin-right: 10px;
+  margin-left: 10px;
 }
 .times{
   font-size: 16px;
+}
+.times span{
+  display: inline-block;
+  width: 40px;
 }
 .completed{
   display: block;
@@ -243,11 +404,57 @@ export default {
   top: -3px;
   box-shadow: 0 0 3px #017cc3;
 }
+.conent .allscreen{
+  font-size: 20px;
+  margin-left: 5px;
+  display: block;
+}
 .selest{
   cursor: pointer;
   font-size: 16px;
   margin-left: 10px;
   margin-top: 14px;
+}
+.volume{
+  position: relative;
+  margin-left: 10px;
+}
+.volume:hover .volumecontrol{
+  display: block;
+}
+.volume .volumecontrol{
+  display: none;
+  /*padding-top: 10px;*/
+  font-size: 14px;
+  position: absolute;
+  height: 140px;
+  width: 30px;
+  border-radius: 10px;
+  background-color: #fff;
+  bottom: 30px;
+  left: -5px;
+}
+.volume .volumecontrol p{
+  width: 8px;
+  height: 100px;
+  background: #e5e9ef;
+  margin: -10px auto;
+  position: relative;
+  cursor: pointer;
+}
+.volume .volumecontrol p .volumereadin{
+  left: -4px;
+  top: 40px;
+  position: absolute;
+  z-index: 10;
+}
+.volume .volumecontrol p .volumeprogress{
+  width: 8px;
+  height: 50%;
+  background: #00a1d6;
+  display: block;
+  position: absolute;
+  bottom: 0px;
 }
 .selestlist{
   height: 80%;
