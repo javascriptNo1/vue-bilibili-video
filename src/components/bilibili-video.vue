@@ -3,7 +3,7 @@
       <video @click="onvideoaply" @timeupdate="timeupdate" @loadedmetadata="loadedmetadata" ref="videoExample"
              width="666px"
              height="500px"
-             src="http://www.1ecst.com/tp_ecst/Public//upload/template/videos/2018-06-13/1528891973_1754596351.mp4">
+             src="../assets/videos/1-1导学.mp4">
       </video>
       <div class="conent" ref="conent">
         <i @click="aply" ref="playbut" class="videobut iconfont icon-bofang"></i>
@@ -41,6 +41,8 @@
 </template>
 
 <script>
+import '../mock/barragedata'
+import axios from 'axios'
 export default {
   props: {
     url: {
@@ -58,6 +60,7 @@ export default {
       playState: false,
       readx: 1,
       readlength: '0%',
+      Totallength: 400,
       loaded: false,
       current: '00:00',
       timelengths: '00:00',
@@ -65,7 +68,8 @@ export default {
       volumereadintop: '85%',
       volumerlength: 50,
       volumesum: 50,
-      volumes: 0.5
+      volumes: 0.5,
+      barragedata: []
     }
   },
   mounted () {
@@ -113,9 +117,30 @@ export default {
         this.aply()
       }
     })
+    window.onresize = () => {
+      if (!this.checkFull()) {
+        this.$refs.allscreen.className = this.$refs.allscreen.className.replace('icon-tuichuquanping1', 'icon-quanping')
+        this.$refs.videoExample.width = '666'
+        this.$refs.videoExample.height = '500'
+        this.$refs.videoExample.style.position = 'static'
+        this.$refs.conent.style.position = 'absolute'
+        this.$refs.progress.style.width = 400 + 'px'
+        this.Totallength = 400
+      }
+    }
     this.$refs.videoExample.volume = 0.5
+    axios.get('barrage.php')
+      .then((respone) => {
+        console.log(respone.data.list)
+        this.barragedata = respone.data.list
+      })
   },
   methods: {
+    checkFull () {
+      var isFull = document.fullscreenEnabled || window.fullScreen || document.webkitIsFullScreen || document.msFullscreenEnabled
+      if (isFull === undefined) isFull = false
+      return isFull
+    },
     aply () {
       if (!this.playState) {
         this.playState = true
@@ -135,7 +160,7 @@ export default {
       document.body.addEventListener('mousemove', this.MoveReadin)
     },
     MoveReadin (event) {
-      this.readlength = (this.readleft + ((event.clientX - this.readx) / 400) * 100)
+      this.readlength = (this.readleft + ((event.clientX - this.readx) / this.Totallength) * 100)
       if (this.readlength <= 0) {
         this.readlength = 0
       } else if (this.readlength >= 100) {
@@ -163,7 +188,7 @@ export default {
     },
     onclickprogress (event) {
       let lef = event.clientX - this.getOffsetLeft(this.$refs.progress)
-      this.readlength = ((lef / 400) * 100) + '%'
+      this.readlength = ((lef / this.Totallength) * 100) + '%'
       this.setreadlength(this.readlength)
     },
     setreadlength (readlength, item) {
@@ -295,12 +320,15 @@ export default {
         } else if (de.webkitRequestFullScreen) {
           de.webkitRequestFullScreen()
         }
+        this.$refs.allscreen.className = this.$refs.allscreen.className.replace('icon-quanping', 'icon-tuichuquanping1')
         setTimeout(() => {
           this.$refs.videoExample.width = window.innerWidth
           this.$refs.videoExample.height = window.innerHeight
           this.$refs.videoExample.style.position = 'fixed'
           this.$refs.conent.style.position = 'fixed'
           this.$refs.conent.style.bottom = '0'
+          this.$refs.progress.style.width = (window.innerWidth - 400) + 'px'
+          this.Totallength = window.innerWidth - 400
         }, 20)
       } else {
         let de = document
@@ -311,10 +339,13 @@ export default {
         } else if (de.webkitCancelFullScreen) {
           de.webkitCancelFullScreen()
         }
+        this.$refs.allscreen.className = this.$refs.allscreen.className.replace('icon-tuichuquanping1', 'icon-quanping')
         this.$refs.videoExample.width = '666'
         this.$refs.videoExample.height = '500'
         this.$refs.videoExample.style.position = 'static'
         this.$refs.conent.style.position = 'absolute'
+        this.$refs.progress.style.width = 400 + 'px'
+        this.Totallength = 400
       }
     }
   }
@@ -406,8 +437,8 @@ export default {
 }
 .conent .allscreen{
   font-size: 20px;
-  margin-left: 5px;
-  display: block;
+  position: absolute;
+  right: 0px;
 }
 .selest{
   cursor: pointer;
