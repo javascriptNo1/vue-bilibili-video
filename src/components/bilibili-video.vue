@@ -1,6 +1,6 @@
 <template>
     <div class="videoBox" ref="videoBox">
-      <video @click="onvideoaply" @timeupdate="timeupdate" @loadedmetadata="loadedmetadata" ref="videoExample"
+      <video @timeupdate="timeupdate" @loadedmetadata="loadedmetadata" ref="videoExample"
              width="666px"
              height="500px"
              src="../assets/videos/1-1导学.mp4">
@@ -37,6 +37,9 @@
           <!--<li v-for="(itme, index) in url" :key="index" @click="onchoice" :data-url="itme">{{index+1}}</li>-->
         <!--</ul>-->
       <!--</div>-->
+      <div @click="onvideoaply" class="barrage">
+        <div>测试弹幕</div>
+      </div>
     </div>
 </template>
 
@@ -60,7 +63,7 @@ export default {
       playState: false,
       readx: 1,
       readlength: '0%',
-      Totallength: 400,
+      Totallength: 500,
       loaded: false,
       current: '00:00',
       timelengths: '00:00',
@@ -69,7 +72,8 @@ export default {
       volumerlength: 50,
       volumesum: 50,
       volumes: 0.5,
-      barragedata: []
+      barragedata: [],
+      second: 1
     }
   },
   mounted () {
@@ -129,9 +133,8 @@ export default {
       }
     }
     this.$refs.videoExample.volume = 0.5
-    axios.get('barrage.php')
+    axios.post('barrage.php')
       .then((respone) => {
-        console.log(respone.data.list)
         this.barragedata = respone.data.list
       })
   },
@@ -173,13 +176,18 @@ export default {
     },
     timeupdate () {
       let lent = (this.$refs.videoExample.currentTime / 60).toString().substring(0, 4)
+      // 弹幕
+      for (let i = 0; i < this.barragedata.length; i++) {
+        if (Number.parseInt(this.$refs.videoExample.currentTime) === this.barragedata[i].date) {
+          let html = `<div style="color: ${this.barragedata[i].color}">${this.barragedata[i].constent}</div>`
+          console.log(html)
+        }
+      }
       let s = lent.split('.')[1]
       if (s >= 60) {
         s = s % 60
       }
-      setTimeout(() => {
-        this.calculateschedule()
-      }, 1000)
+      this.calculateschedule()
       this.readlength = (Number.parseInt(this.$refs.videoExample.currentTime) / Number.parseInt(this.$refs.videoExample.duration) * 100) + '%'
       this.setreadlength(this.readlength, true)
       if (this.$refs.videoExample.buffered.length >= 1) {
@@ -514,5 +522,20 @@ export default {
 }
 .selestlist ul li:hover{
   background-color: #0000009e;
+}
+.barrage{
+  cursor: pointer;
+ position: absolute;
+ width: 100%;
+ height: 100%;
+  top: 0px;
+  overflow: hidden;
+}
+.barrage div{
+  text-align: left;
+ position: absolute;
+  transition: all 3s;
+  left: 700px;
+  width: 100%;
 }
 </style>
