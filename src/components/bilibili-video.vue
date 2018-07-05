@@ -37,8 +37,8 @@
           <!--<li v-for="(itme, index) in url" :key="index" @click="onchoice" :data-url="itme">{{index+1}}</li>-->
         <!--</ul>-->
       <!--</div>-->
-      <div @click="onvideoaply" class="barrage">
-        <div>测试弹幕</div>
+      <div ref="barrage" @click="onvideoaply" class="barrage">
+        <div class="barragecontent">测试弹幕</div>
       </div>
     </div>
 </template>
@@ -179,8 +179,26 @@ export default {
       // 弹幕
       for (let i = 0; i < this.barragedata.length; i++) {
         if (Number.parseInt(this.$refs.videoExample.currentTime) === this.barragedata[i].date) {
-          let html = `<div style="color: ${this.barragedata[i].color}">${this.barragedata[i].constent}</div>`
-          console.log(html)
+          let html = document.createElement('div')
+          html.style.left = '700px'
+          html.style.width = '100%'
+          html.style.textAlign = 'left'
+          html.style.position = 'absolute'
+          html.style.transition = 'all 10s'
+          html.className = 'barragecontent'
+          html.style.top = this.barragedata[i].position + 'px'
+          html.style.color = this.barragedata[i].color
+          html.innerHTML = this.barragedata[i].constent
+          let lastchld = this.$refs.barrage.lastChild.innerHTML
+          if (lastchld !== this.barragedata[i].constent) {
+            this.$refs.barrage.appendChild(html)
+            setTimeout(() => {
+              html.style.left = '-700px'
+              setTimeout(() => {
+                this.$refs.barrage.removeChild(html)
+              }, 11000)
+            }, 1000)
+          }
         }
       }
       let s = lent.split('.')[1]
@@ -525,15 +543,15 @@ export default {
 }
 .barrage{
   cursor: pointer;
- position: absolute;
- width: 100%;
- height: 100%;
+  position: absolute;
+  width: 100%;
+  height: 90%;
   top: 0px;
   overflow: hidden;
 }
-.barrage div{
+.barrage .barragecontent{
   text-align: left;
- position: absolute;
+  position: absolute;
   transition: all 3s;
   left: 700px;
   width: 100%;
