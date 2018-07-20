@@ -38,7 +38,7 @@
         <!--</ul>-->
       <!--</div>-->
       <div ref="barrage" @click="onvideoaply" class="barrage">
-        <div class="barragecontent">测试弹幕</div>
+        <canvas id="canvarrage" width="700" height="454"></canvas>
       </div>
     </div>
 </template>
@@ -177,28 +177,22 @@ export default {
     timeupdate () {
       let lent = (this.$refs.videoExample.currentTime / 60).toString().substring(0, 4)
       // 弹幕
+      const can = document.getElementById('canvarrage')
+      const ctx = can.getContext('2d')
       for (let i = 0; i < this.barragedata.length; i++) {
         if (Number.parseInt(this.$refs.videoExample.currentTime) === this.barragedata[i].date) {
-          let html = document.createElement('div')
-          html.style.left = '700px'
-          html.style.width = '100%'
-          html.style.textAlign = 'left'
-          html.style.position = 'absolute'
-          html.style.transition = 'all 10s'
-          html.className = 'barragecontent'
-          html.style.top = this.barragedata[i].position + 'px'
-          html.style.color = this.barragedata[i].color
-          html.innerHTML = this.barragedata[i].constent
-          let lastchld = this.$refs.barrage.lastChild.innerHTML
-          if (lastchld !== this.barragedata[i].constent) {
-            this.$refs.barrage.appendChild(html)
+          let n = 500
+          ctx.fillStyle = 'black'
+          ctx.font = '20px 黑体'
+          ctx.fillText('测试弹幕', 100, Number.parseInt((Math.random() * 100)))
+          ctx.fillStyle = this.barragedata[i].color
+          ctx.fillText(this.barragedata[i].constent, n, Math.random() * 500)
+          console.log(this.barragedata[i].constent);
+          ((i) => {
             setTimeout(() => {
-              html.style.left = '-700px'
-              setTimeout(() => {
-                this.$refs.barrage.removeChild(html)
-              }, 11000)
-            }, 1000)
-          }
+              n += 20
+            }, 100)
+          })(i)
         }
       }
       let s = lent.split('.')[1]
@@ -475,10 +469,9 @@ export default {
 .volume{
   position: relative;
   margin-left: 10px;
+  z-index: 99999999;
 }
-.volume:hover .volumecontrol{
-  display: block;
-}
+
 .volume .volumecontrol{
   display: none;
   /*padding-top: 10px;*/
@@ -491,6 +484,11 @@ export default {
   bottom: 30px;
   left: -5px;
 }
+.volume:hover .volumecontrol,
+.volume .volumecontrol:hover{
+  display: block;
+}
+
 .volume .volumecontrol p{
   width: 8px;
   height: 100px;
@@ -549,11 +547,6 @@ export default {
   top: 0px;
   overflow: hidden;
 }
-.barrage .barragecontent{
-  text-align: left;
-  position: absolute;
-  transition: all 3s;
-  left: 700px;
-  width: 100%;
+.barrage #canvarrage{
 }
 </style>
