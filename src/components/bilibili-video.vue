@@ -37,15 +37,16 @@
           <!--<li v-for="(itme, index) in url" :key="index" @click="onchoice" :data-url="itme">{{index+1}}</li>-->
         <!--</ul>-->
       <!--</div>-->
-      <div ref="barrage" @click="onvideoaply" class="barrage">
-        <canvas id="canvarrage" width="700" height="454"></canvas>
-      </div>
+      <!--<div ref="barrage" @click="onvideoaply" class="barrage">-->
+        <!--<canvas id="canvarrage" width="700" height="454"></canvas>-->
+      <!--</div>-->
     </div>
 </template>
 
 <script>
-import '../mock/barragedata'
-import axios from 'axios'
+// import '../mock/barragedata'
+// import axios from 'axios'
+
 export default {
   props: {
     url: {
@@ -56,7 +57,7 @@ export default {
           '../assets/videos/1-1导学.mp4'
         ]
       }
-    }
+    },
   },
   data () {
     return {
@@ -133,10 +134,10 @@ export default {
       }
     }
     this.$refs.videoExample.volume = 0.5
-    axios.post('barrage.php')
-      .then((respone) => {
-        this.barragedata = respone.data.list
-      })
+    // axios.post('barrage.php')
+    //   .then((respone) => {
+    //     this.barragedata = respone.data.list
+    //   })
   },
   methods: {
     checkFull () {
@@ -177,24 +178,24 @@ export default {
     timeupdate () {
       let lent = (this.$refs.videoExample.currentTime / 60).toString().substring(0, 4)
       // 弹幕
-      const can = document.getElementById('canvarrage')
-      const ctx = can.getContext('2d')
-      for (let i = 0; i < this.barragedata.length; i++) {
-        if (Number.parseInt(this.$refs.videoExample.currentTime) === this.barragedata[i].date) {
-          let n = 500
-          ctx.fillStyle = 'black'
-          ctx.font = '20px 黑体'
-          ctx.fillText('测试弹幕', 100, Number.parseInt((Math.random() * 100)))
-          ctx.fillStyle = this.barragedata[i].color
-          ctx.fillText(this.barragedata[i].constent, n, Math.random() * 500)
-          console.log(this.barragedata[i].constent);
-          ((i) => {
-            setTimeout(() => {
-              n += 20
-            }, 100)
-          })(i)
-        }
-      }
+      // const can = document.getElementById('canvarrage')
+      // const ctx = can.getContext('2d')
+      // for (let i = 0; i < this.barragedata.length; i++) {
+      //   if (Number.parseInt(this.$refs.videoExample.currentTime) === this.barragedata[i].date) {
+      //     let n = 500
+      //     ctx.fillStyle = 'black'
+      //     ctx.font = '20px 黑体'
+      //     ctx.fillText('测试弹幕', 100, Number.parseInt((Math.random() * 100)))
+      //     ctx.fillStyle = this.barragedata[i].color
+      //     ctx.fillText(this.barragedata[i].constent, n, Math.random() * 500)
+      //     console.log(this.barragedata[i].constent);
+      //     ((i) => {
+      //       setTimeout(() => {
+      //         n += 20
+      //       }, 100)
+      //     })(i)
+      //   }
+      // }
       let s = lent.split('.')[1]
       if (s >= 60) {
         s = s % 60
